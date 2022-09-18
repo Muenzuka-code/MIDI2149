@@ -1,17 +1,16 @@
 # MIDI2149
-Arduino library for YM2149-based MIDI synthesizer. Support multi YM2149 and it should also work on AY3891x chips.
-It works with two YM2149 and Arduino UNO board.
-[中文](README-zh.md)
-## Dependencies
+支持使用多片YM2149的MIDI合成器的Arduino库，AY3891系列芯片应该也可以使用。
+使用2片YM2149和Arduino UNO进行了测试。
+[English](README.md)
+## 依赖
 [ardumidi by hairless-midiserial](https://github.com/projectgus/hairless-midiserial/tree/master/ardumidi)
 [AY3891x](https://github.com/Andy4495/AY3891x)
-
-**NOTICE**
-The official version of ardumidi has bugs, check my [PR](https://github.com/projectgus/hairless-midiserial/pull/81/files). 
-I fixed it [here](https://github.com/Muenzuka-code/hairless-midiserial/tree/master/ardumidi).
-## Usage
-Install ardumidi and AY3891x to your Arduino IDE or add those files to your workspace.
-Install hairless-midiserial and LoopMIDI for playing MIDI.
+**注意**
+官方版本的ardumidi有bug，可以参照我提交的[PR](https://github.com/projectgus/hairless-midiserial/pull/81/files)。
+我的[fork](https://github.com/Muenzuka-code/hairless-midiserial/tree/master/ardumidi).里对这个bug进行了修正。
+## 使用方法
+将ardumidi和AY3891x安装到你的Arduino IDE中，或者把文件放到你的项目路径下。
+安装hairless-midiserial与LoopMIDI用于播放MIDI。
 ### Example code
 ```c++
 #include "midi2149.h"
