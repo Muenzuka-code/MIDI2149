@@ -43,33 +43,33 @@ public:
         PSG2_CHANNEL_B = 8,
         PSG2_CHANNEL_C = 9,
 #if (PSG_NUM > 3)
-        PSG2_CHANNEL_A = 10,
-        PSG2_CHANNEL_B = 11,
-        PSG2_CHANNEL_C = 12,
+        PSG3_CHANNEL_A = 10,
+        PSG3_CHANNEL_B = 11,
+        PSG3_CHANNEL_C = 12,
 #if (PSG_NUM > 4)
-        PSG2_CHANNEL_A = 13,
-        PSG2_CHANNEL_B = 14,
-        PSG2_CHANNEL_C = 15,
+        PSG4_CHANNEL_A = 13,
+        PSG4_CHANNEL_B = 14,
+        PSG4_CHANNEL_C = 15,
 #if (PSG_NUM > 5)
-        PSG2_CHANNEL_A = 16,
-        PSG2_CHANNEL_B = 17,
-        PSG2_CHANNEL_C = 18,
+        PSG5_CHANNEL_A = 16,
+        PSG5_CHANNEL_B = 17,
+        PSG5_CHANNEL_C = 18,
 #if (PSG_NUM > 6)
-        PSG2_CHANNEL_A = 19,
-        PSG2_CHANNEL_B = 20,
-        PSG2_CHANNEL_C = 21,
+        PSG6_CHANNEL_A = 19,
+        PSG6_CHANNEL_B = 20,
+        PSG6_CHANNEL_C = 21,
 #if (PSG_NUM > 7)
-        PSG2_CHANNEL_A = 22,
-        PSG2_CHANNEL_B = 23,
-        PSG2_CHANNEL_C = 24,
+        PSG7_CHANNEL_A = 22,
+        PSG7_CHANNEL_B = 23,
+        PSG7_CHANNEL_C = 24,
 #if (PSG_NUM > 8)
-        PSG2_CHANNEL_A = 25,
-        PSG2_CHANNEL_B = 26,
-        PSG2_CHANNEL_C = 27,
+        PSG8_CHANNEL_A = 25,
+        PSG8_CHANNEL_B = 26,
+        PSG8_CHANNEL_C = 27,
 #if (PSG_NUM > 9)
-        PSG2_CHANNEL_A = 28,
-        PSG2_CHANNEL_B = 29,
-        PSG2_CHANNEL_C = 30,
+        PSG9_CHANNEL_A = 28,
+        PSG9_CHANNEL_B = 29,
+        PSG9_CHANNEL_C = 30,
 #endif
 #endif
 #endif
@@ -106,7 +106,9 @@ private:
     byte getFreePSGChannel(byte MIDIChannel);
     void PSGChannelOn(byte PSGChannel);
     void PSGChannelOn(byte PSGChannel, byte note, byte velo);
+    void PSGChannelOnPercussion(byte PSGChannel, byte note, byte velo);
     void PSGChannelOff(byte PSGChannel);
+    void PSGChannelOffPercussion(byte PSGChannel);
     void PSGOff(byte psg);
     void PSGChannelOffAll();
 

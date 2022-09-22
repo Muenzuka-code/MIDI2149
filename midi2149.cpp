@@ -11,6 +11,7 @@ void MIDI2149::begin()
         psgs[i].begin();
         mixs[i] = 255;
     }
+    pinMode(LED_BUILTIN, OUTPUT);
 }
 void MIDI2149::bindPSGChannel2MIDIchannel(byte PSGChannel, byte MIDIChannel)
 {
@@ -28,8 +29,8 @@ void MIDI2149::bindPSGChannel2MIDIchannel(byte PSGChannel, byte MIDIChannel)
     {
         return;
     }
-    PSGChannelMaps[PSGChannel-1].MIDIChannel = MIDIChannel;
-    PSGChannelMaps[PSGChannel-1].chlidx = first_empty;
+    PSGChannelMaps[PSGChannel - 1].MIDIChannel = MIDIChannel;
+    PSGChannelMaps[PSGChannel - 1].chlidx = first_empty;
 
     MIDIChannels[MIDIChannel].PSGChannels[first_empty].PSGChannel = PSGChannel;
     MIDIChannels[MIDIChannel].PSGChannels[first_empty].note = MIDI2149::PSG_IDLE;
@@ -50,8 +51,9 @@ void MIDI2149::listen()
     while (midi_message_available() > 0)
     {
         MidiMessage _m = read_midi_message();
+        digitalWrite(LED_BUILTIN, HIGH);
         this->m = _m;
-        
+
         switch (m.command)
         {
         case MIDI_NOTE_ON:
@@ -78,14 +80,15 @@ void MIDI2149::listen()
         default:
             break;
         }
+        digitalWrite(LED_BUILTIN, LOW);
     }
 }
 
 void MIDI2149::onNoteOn()
 {
     byte channel = m.channel;
-    byte note = m.param1&B01111111;
-    byte velo = m.param2&B01111111;
+    byte note = m.param1;
+    byte velo = m.param2;
     if (velo == 0)
     {
         onNoteOff();
@@ -96,9 +99,16 @@ void MIDI2149::onNoteOn()
     {
         return;
     }
+    if (note < 35)
+    {
+        return;
+    }
     MIDIChannels[channel].PSGChannels[chlidx].note = note;
     byte psgchl = MIDIChannels[channel].PSGChannels[chlidx].PSGChannel;
-    PSGChannelOn(psgchl, note, velo);
+    if (channel != 9)
+        PSGChannelOn(psgchl, note, velo);
+    else
+        PSGChannelOnPercussion(psgchl, note, velo);
 }
 
 void MIDI2149::onNoteOff()
@@ -121,16 +131,16 @@ void MIDI2149::onController()
         for (byte i = 0; i < MAXINUM_PSG_CHANNEL_PER_MIDI_CHANNEL; i++)
         {
             byte PSGChannel = MIDIChannels[m.channel].PSGChannels[i].PSGChannel;
-            if(PSGChannel!=MIDI2149::PSG_NONE){
-                byte psg = (PSGChannel -1)/3;
+            if (PSGChannel != MIDI2149::PSG_NONE)
+            {
+                byte psg = (PSGChannel - 1) / 3;
                 byte chl = (PSGChannel - 1) % 3;
 
                 psgs[psg].write(chl + 8, m.param2 >> 3);
             }
         }
-        
     }
-    
+
     if (m.param1 >= 120)
     {
         PSGChannelOffAll();
@@ -189,13 +199,47 @@ void MIDI2149::PSGChannelOn(byte PSGChannel, byte note, byte velo)
     psgs[psg].write(chl + 8, velo >> 3);
 }
 
+void MIDI2149::PSGChannelOnPercussion(byte PSGChannel, byte note, byte velo)
+{
+    if (note < 35)
+    {
+        return;
+    }
+    byte psg = (PSGChannel - 1) / 3;
+    byte chl = (PSGChannel - 1) % 3;
+    
+
+    if (note < 37 || note == 41)
+    {
+        mixs[psg] = mixs[psg] | (byte)(1 << chl);
+        psgs[psg].write(AY3891x::Noise_Period_Reg, 0x1F);
+        psgs[psg].write(AY3891x::Env_Period_Coarse_Reg, 4);
+    }
+    else if (note < 42 || note == 47 || note == 48)
+    {
+        mixs[psg] = mixs[psg] & ~(byte)(1 << chl + 3) | (byte)(1 << chl);
+        psgs[psg].write(AY3891x::Noise_Period_Reg, 0xF);
+        psgs[psg].write(AY3891x::Env_Period_Coarse_Reg, 4);
+    }
+    else
+    {
+        mixs[psg] = mixs[psg] & ~(byte)(1 << chl + 3) | (byte)(1 << chl);
+        psgs[psg].write(AY3891x::Noise_Period_Reg, 0x0);
+        psgs[psg].write(AY3891x::Env_Period_Coarse_Reg, 0x1c);
+    }
+    psgs[psg].write(AY3891x::Env_Period_Fine_Reg, 0);
+    psgs[psg].write(chl + 8, 0b0010000);
+    psgs[psg].write(AY3891x::Env_Shape_Cycle, 0);
+
+    psgs[psg].write(AY3891x::Enable_Reg, mixs[psg]);
+}
+
 void MIDI2149::PSGChannelOff(byte PSGChannel)
 {
     byte psg = (PSGChannel - 1) / 3;
     byte chl = (PSGChannel - 1) % 3;
-    mixs[psg] = mixs[psg] | (byte)(1 << chl);
+    mixs[psg] = mixs[psg] | (byte)(1 << chl) | (byte)(1 << (chl + 3));
     psgs[psg].write(AY3891x::Enable_Reg, mixs[psg]);
-
 
     byte midichl = PSGChannelMaps[PSGChannel - 1].MIDIChannel;
     byte chlidx = PSGChannelMaps[PSGChannel - 1].chlidx;
@@ -210,12 +254,12 @@ void MIDI2149::PSGChannelOffAll()
     }
 }
 
-byte MIDI2149::fastlog2(byte a){
+byte MIDI2149::fastlog2(byte a)
+{
     byte log = 0;
-    while (a>0)
+    while (a > 0)
     {
-        a>>++log;
+        a >> ++log;
     }
     return log;
-    
 }

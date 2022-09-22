@@ -6,6 +6,7 @@
 
 #define MAXINUM_MIDI_CHANNEL 16
 #define MAXINUM_PSG_CHANNEL_PER_MIDI_CHANNEL 6
-#define PSG_NUM 2 //up to 10
+#define PSG_NUM 4 //up to 10
+#define CLOCK_FREQUENCY (4000000UL)
 
 #endif
